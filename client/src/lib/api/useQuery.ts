@@ -7,6 +7,11 @@ interface State<TData> {
   error: boolean
 }
 
+//not needed here but to be consistent with useMutation tuple pattern
+interface QueryResult<TData> extends State<TData> {
+  refetch: () => void;
+}
+
 export const useQuery = <TData = any>(query: string) => {
   const [state, setState] = useState<State<TData>>({
     data: null, 
@@ -17,7 +22,7 @@ export const useQuery = <TData = any>(query: string) => {
   const fetch = useCallback(() => {
     const fetchApi = async () => {
     //try catch error handling to handle server error - if req fails completely, not graphql error - actual req failing
-    //another case is if req is successful(200) but the graphql api generated errors and gave back null data - which is how it happens if graphql has errors eg forcing an error in resolver before the db request. 
+    //another case is if req is successful(200) but the graphql api generated errors and gave back null data - which is how it happens if graphql has errors eg forcing an error in resolver before the db request - that is in if condition: can simulate by modifying reducer, req will still be 200ok
     try{
 
         setState({data: null, loading: true, error: false})
