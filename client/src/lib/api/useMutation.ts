@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { server } from "./server";
 
 interface State<TData> {
@@ -7,19 +7,34 @@ interface State<TData> {
   error: boolean;
 }
 
-//because we are returning an array from this file. The array has different data types in it. 
 type MutationTuple<TData, TVariables> = [
   (variables?: TVariables | undefined) => Promise<void>,
   State<TData>
 ];
 
+type Action<TData> =
+  | { type: "FETCH" }
+  | { type: "FETCH_SUCCESS"; payload: TData }
+  | { type: "FETCH_ERROR" };
 
-//acceps Tdata and tvariables
+const reducer = <TData>() => (state: State<TData>, action: Action<TData>) => {
+  switch (action.type) {
+    case "FETCH":
+      return { ...state, loading: true };
+    case "FETCH_SUCCESS":
+      return { ...state, data: action.payload, loading: false, error: false };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: true };
+    default:
+      throw new Error();
+  }
+};
 
-export const useMutation = <TData = any, TVariables = any>(
+export const useMutation = <TData, TVariables = {}>(
   query: string
 ): MutationTuple<TData, TVariables> => {
-  const [state, setState] = useState<State<TData>>({
+  const fetchReducer = reducer<TData>();
+  const [state, dispatch] = useReducer(fetchReducer, {
     data: null,
     loading: false,
     error: false
@@ -27,9 +42,8 @@ export const useMutation = <TData = any, TVariables = any>(
 
   const fetch = async (variables?: TVariables) => {
     try {
-      setState({ data: null, loading: true, error: false });
+      dispatch({ type: "FETCH" });
 
-        //sending TData and Tvariables to fetch so that our return is properly type checked
       const { data, errors } = await server.fetch<TData, TVariables>({
         query,
         variables
@@ -39,9 +53,9 @@ export const useMutation = <TData = any, TVariables = any>(
         throw new Error(errors[0].message);
       }
 
-      setState({ data, loading: false, error: false });
+      dispatch({ type: "FETCH_SUCCESS", payload: data });
     } catch (err) {
-      setState({ data: null, loading: false, error: true });
+      dispatch({ type: "FETCH_ERROR" });
       throw console.error(err);
     }
   };
