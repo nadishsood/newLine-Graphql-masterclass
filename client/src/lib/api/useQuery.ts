@@ -28,3 +28,4 @@ export const useQuery = <TData = any>(query: string) => {
 //  The fetchApi() function will be responsible for making the API request by running the server.fetch() function. As we run server.fetch(), we'll pass in the query payload it expects and a type variable of the data that is to be returned. We'll retrieve the data from the request and update the state property created in our Hook.
 
 // The useQuery Hook isn't smart enough to recognize that the query parameter value is to be a constant value declared outside of the component. Even if the <Listings> component gets re-rendered on change, we'll still be referencing the same LISTINGS constant value. As a recommended approach mentioned by Dan Abramov - if a dependency (function or non-function value) is truly constant, there's no harm in placing it as part of the dependencies list of an effect.
+
