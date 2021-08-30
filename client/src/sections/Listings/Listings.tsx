@@ -35,7 +35,7 @@ interface Props {
 }
 
 export const Listings = ({ title }: Props) => {
-  const { data, refetch } = useQuery<ListingsData>(LISTINGS);
+  const { data, refetch, loading, error } = useQuery<ListingsData>(LISTINGS);
 
   const deleteListing = async (id: string) => {
     await server.fetch<DeleteListingData, DeleteListingVariables>({
@@ -61,6 +61,14 @@ export const Listings = ({ title }: Props) => {
       })}
     </ul>
   ) : null;
+
+  if(loading){
+    return <h2>Loading</h2>
+  }
+
+  if(error){
+    return <h2>Something went wrong - try again later</h2>
+  }
 
   return (
     <div>
@@ -172,3 +180,5 @@ export const Listings = ({ title }: Props) => {
 //FC Interface allows proptypes etc to be used.
 //FC
 
+
+// Our listings GraphQL query doesn't depend on variables but we can very well have passed in variables to our Hook to consume if needed. However, we'll have to be careful here since if our component ever re-renders, a new variables object will be passed into our Hook if variables are defined in the component (unlike the query document). If we were to do this, we may need to take additional steps to perhaps memoize the variables being passed as well. This is where a useRef Hook may need to be used.

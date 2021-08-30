@@ -17,6 +17,10 @@ interface Body <TVariables>{
 //     }
 //   };
 
+interface Error{
+  message: string;
+}
+
 export const server = {
     //default value for Tdata is any.
     fetch: async <TData = any, TVariables = any>(body: Body<TVariables>) => {
@@ -27,8 +31,12 @@ export const server = {
         },
         body: JSON.stringify(body)
       });
+
+      if(!res.ok){
+        throw new Error("failed to fetchfrom server");
+      }
       //so when the promise resolves it will have a data field which will/should be of type TData
-      return res.json() as Promise<{data: TData}>;
+      return res.json() as Promise<{data: TData; errors: Error[]}>;
     }
   }
 

@@ -2,22 +2,40 @@ import { useState, useEffect, useCallback } from "react";
 import { server } from "./server";
 
 interface State<TData> {
-  data: TData | null;
+  data: TData | null, 
+  loading: boolean, 
+  error: boolean
 }
 
 export const useQuery = <TData = any>(query: string) => {
   const [state, setState] = useState<State<TData>>({
-    data: null
+    data: null, 
+    loading: false, 
+    error: false
   });
 
   const fetch = useCallback(() => {
     const fetchApi = async () => {
-      const { data } = await server.fetch<TData>({
+    //try catch error handling to handle server error - if req fails completely, not graphql error - actual req failing
+    //another case is if req is successful(200) but the graphql api generated errors and gave back null data - which is how it happens if graphql has errors eg forcing an error in resolver before the db request. 
+    try{
+
+        setState({data: null, loading: true, error: false})
+      const { data, errors } = await server.fetch<TData>({
         query
       });
-      setState({ data });
-    };
+      if(errors && errors.length){
+          throw new Error(errors[0].message);
+      }
+      setState({ data, loading: false, error: false });
+    }catch(err){
+        setState({ data: null, loading: false, error: true }); 
+        throw console.error(err);
+    }
 
+
+    }
+    
     fetchApi();
   }, [query]);
 
@@ -25,7 +43,7 @@ export const useQuery = <TData = any>(query: string) => {
     fetch();
   }, [fetch]);
 
-  return { ...state, refetch: fetch };
+  return {...state, refetch: fetch};
 };
 //see Alexanders generics to understand how this TData is going to be set in Listings.tsx
 // The State interface will contain the data object that will be returned from our API call. The shape of data will be from a type variable the interface will accept and be passed from the useQuery Hook function. We'll label the type variable the State interface is to accept as TData as well.
