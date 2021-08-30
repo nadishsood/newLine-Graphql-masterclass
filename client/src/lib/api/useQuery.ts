@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { server } from "./server";
 
 interface State<TData> {
@@ -10,16 +10,22 @@ export const useQuery = <TData = any>(query: string) => {
     data: null
   });
 
-  useEffect(() => {
+  const fetch = useCallback(() => {
     const fetchApi = async () => {
-      const { data } = await server.fetch<TData>({ query });
+      const { data } = await server.fetch<TData>({
+        query
+      });
       setState({ data });
     };
 
     fetchApi();
   }, [query]);
 
-  return state;
+  useEffect(() => {
+    fetch();
+  }, [fetch]);
+
+  return { ...state, refetch: fetch };
 };
 //see Alexanders generics to understand how this TData is going to be set in Listings.tsx
 // The State interface will contain the data object that will be returned from our API call. The shape of data will be from a type variable the interface will accept and be passed from the useQuery Hook function. We'll label the type variable the State interface is to accept as TData as well.
