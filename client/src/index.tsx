@@ -2,10 +2,20 @@ import React from 'react';
 import {render} from 'react-dom';
 import reportWebVitals from './reportWebVitals';
 
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "@apollo/react-hooks";
+
 import { Listings } from "./sections";
+const client = new ApolloClient({
+  uri: "/api"
+});
+
 
 render(
-  <Listings title="dummyTitle"/>, 
+  <ApolloProvider client={client}>
+
+    <Listings title="dummyTitle"/>
+  </ApolloProvider>, 
   document.getElementById('root')
 );
 
