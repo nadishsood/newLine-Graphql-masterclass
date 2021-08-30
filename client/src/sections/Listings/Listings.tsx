@@ -1,12 +1,15 @@
 import React from "react";
-import { useQuery, useMutation } from "../../lib/api";
+// import { useQuery, useMutation } from "../../lib/api";
 import {
   DeleteListingData,
   DeleteListingVariables,
   ListingsData
 } from "./types";
 
-const LISTINGS = `
+import { useQuery, useMutation } from "@apollo/react-hooks";
+import { gql } from "apollo-boost";
+
+const LISTINGS = gql`
   query Listings {
     listings {
       id
@@ -22,7 +25,10 @@ const LISTINGS = `
   }
 `;
 
-const DELETE_LISTING = `
+// The Hooks in React Apollo expect our GraphQL documents to be constructed as trees.
+// We can have our GraphQL documents be created as abstract trees with the help of the gql template tag just like we've seen in our Node server application
+
+const DELETE_LISTING = gql`
   mutation DeleteListing($id: ID!) {
     deleteListing(id: $id) {
       id
@@ -44,7 +50,7 @@ export const Listings = ({ title }: Props) => {
 
 
   const handleDeleteListing = async (id: string) => {
-    await deleteListing({id});
+    await deleteListing({variables: {id}});
     refetch();
   };
 
